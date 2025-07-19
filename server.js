@@ -8,10 +8,9 @@ const fs = require('fs');
 const { securityHeaders, apiLimiter } = require('./middlewares/security');
 const errorHandler = require('./middlewares/errorHandler');
 const setupCollaboration = require('./services/collaborationService');
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
 
-const config = require('./config');
+// Load env vars
+dotenv.config({ path: './config/config.env' });
 
 // Connect to database
 connectDB();
@@ -29,12 +28,11 @@ app.use('/api', apiLimiter);
 
 // Mount routers
 app.use('/api/v1', require('./routes/api'));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error handling middleware
 app.use(errorHandler);
 
-const PORT = config.port;
+const PORT = process.env.PORT || 5000;
 
 // Create HTTPS server if in production
 let server;
@@ -54,10 +52,8 @@ server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
 
-const logger = require('./config/logger');
-
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
-  logger.error(`Error: ${err.message}`);
+  console.log(`Error: ${err.message}`);
   server.close(() => process.exit(1));
 });

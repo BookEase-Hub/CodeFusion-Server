@@ -61,11 +61,7 @@ exports.updateFile = async (req, res) => {
 // Terminal execution
 exports.executeCommand = async (req, res) => {
   try {
-    const { command, projectId } = req.body;
-    const project = await Project.findById(projectId);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
+    const { command } = req.body;
 
     // Whitelist of allowed commands
     const allowedCommands = ['ls', 'npm install', 'npm test'];
@@ -73,14 +69,7 @@ exports.executeCommand = async (req, res) => {
       return res.status(400).json({ error: 'Command not allowed' });
     }
 
-    const projectPath = path.join(__dirname, '..', '..', 'projects', project.name);
-
-    // Basic validation to prevent path traversal
-    if (!projectPath.startsWith(path.join(__dirname, '..', '..', 'projects'))) {
-        return res.status(400).json({ error: 'Invalid project path' });
-    }
-
-    exec(command, { cwd: projectPath }, (error, stdout, stderr) => {
+    exec(command, (error, stdout, stderr) => {
       if (error) {
         return res.status(400).json({ error: stderr });
       }

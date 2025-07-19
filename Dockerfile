@@ -14,7 +14,7 @@ WORKDIR /app
 COPY --from=builder /app .
 
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=3000
 
-EXPOSE 5000
-CMD ["npm", "start"]
+EXPOSE 3000
+CMD ["node", "server.js"]

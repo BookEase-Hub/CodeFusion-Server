@@ -11,7 +11,7 @@ exports.getIntegrations = async (req, res) => {
   }
 };
 
-// Create a new integration
+// Create a new integrationCls
 exports.createIntegration = async (req, res) => {
   try {
     const { name, description, category, config } = req.body;

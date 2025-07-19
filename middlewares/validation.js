@@ -32,25 +32,8 @@ const validate = (schema) => (req, res, next) => {
   next();
 };
 
-// Project validation schema
-const projectSchema = Joi.object({
-  name: Joi.string().required(),
-  description: Joi.string().allow(''),
-  language: Joi.string().required()
-});
-
-// Integration validation schema
-const integrationSchema = Joi.object({
-  name: Joi.string().required(),
-  description: Joi.string().allow(''),
-  category: Joi.string().required(),
-  config: Joi.object().required()
-});
-
 module.exports = {
   validateUser: validate(userSchema),
   validateLogin: validate(loginSchema),
-  validateFile: validate(fileSchema),
-  validateProject: validate(projectSchema),
-  validateIntegration: validate(integrationSchema)
+  validateFile: validate(fileSchema)
 };
