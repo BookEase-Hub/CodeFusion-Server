@@ -9,7 +9,7 @@
     "client": "cd client && npm start",
     "server": "node server.js",
     "dev:fullstack": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "cd client && npm run build",
+    "build": "echo 'No frontend to build'",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
