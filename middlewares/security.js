@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const csrf = require('csurf');
 const helmet = require('helmet');
@@ -13,21 +14,24 @@ const apiLimiter = rateLimit({
 const csrfProtection = csrf({ cookie: true });
 
 // Security headers
-const securityHeaders = helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
-      styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
-      imgSrc: ["'self'", 'data:', 'blob:'],
-      connectSrc: ["'self'", 'api.continue.dev']
+const securityHeaders = (req, res, next) => {
+  const nonce = crypto.randomBytes(16).toString('hex');
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", `'nonce-${nonce}'`, 'cdn.jsdelivr.net'],
+        styleSrc: ["'self'", 'cdn.jsdelivr.net'],
+        imgSrc: ["'self'", 'data:', 'blob:'],
+        connectSrc: ["'self'", 'api.continue.dev']
+      }
+    },
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true
     }
-  },
-  hsts: {
-    maxAge: 31536000, // 1 year
-    includeSubDomains: true,
-    preload: true
-  }
-});
+  })(req, res, next);
+};
 
 module.exports = { apiLimiter, csrfProtection, securityHeaders };
