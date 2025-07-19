@@ -5,7 +5,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
 
 # Runtime stage
 FROM node:18-slim
