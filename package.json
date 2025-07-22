@@ -23,6 +23,10 @@
     "deploy": "node scripts/deploy.js"
   },
   "dependencies": {
+    "@langchain/community": "^0.3.49",
+    "@langchain/core": "^0.3.66",
+    "@langchain/langgraph-sdk": "^0.0.100",
+    "@langchain/openai": "^0.6.2",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -30,12 +34,14 @@
     "express": "^4.21.2",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "langchain": "^0.3.30",
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
     "rate-limit-redis": "^3.0.1",
     "redis": "^4.6.10",
     "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^4.7.1"
+    "winston-daily-rotate-file": "^4.7.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
