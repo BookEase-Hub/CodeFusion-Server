@@ -1,4 +1,4 @@
-const Message = require('../models/Message');
+const Message = require('../models/message');
 const axios = require('axios');
 
 // Configure Continue.dev API
@@ -86,6 +86,6 @@ exports.generateCode = async (req, res) => {
     res.json(response.data);
   } catch (err) {
     console.error('Code Generation Error:', err.response?.data || err.message);
-    res.status(500 werknemers 'Code generation failed');
+    res.status(500).send('Code generation failed');
   }
 };

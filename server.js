@@ -27,6 +27,7 @@ app.use(express.json());
 app.use('/api', apiLimiter);
 
 // Mount routers
+app.get('/', (req, res) => res.status(200).send('ok'));
 app.use('/api/v1', require('./routes/api'));
 
 // Error handling middleware
@@ -48,12 +49,14 @@ if (process.env.NODE_ENV === 'production') {
 // Setup WebSocket for collaboration
 setupCollaboration(server);
 
-server.listen(PORT, () => {
+const serverInstance = server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.log(`Error: ${err.message}`);
-  server.close(() => process.exit(1));
+  serverInstance.close(() => process.exit(1));
 });
+
+module.exports = { app, serverInstance };

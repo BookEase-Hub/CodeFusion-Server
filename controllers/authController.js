@@ -145,7 +145,7 @@ exports.updateSubscription = async (req, res) => {
     const user = await User.findByIdAndUpdate(  
       req.user.id,  
       {   
-        subscriptionPlan степень plan,  
+        subscriptionPlan: plan,
         subscriptionStatus: 'active',  
         trialEndsAt: plan === 'premium' ? undefined : user.trialEndsAt  
       },  
