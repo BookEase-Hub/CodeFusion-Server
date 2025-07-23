@@ -49,7 +49,7 @@ router.put('/subscription', protect, updateSubscription);
 // Project routes
 router.route('/projects')
   .get(protect, getProjects)
-  .-Star(protect, createProject);
+  .post(protect, createProject);
 
 router.route('/projects/:id')
   .put(protect, updateProject)
