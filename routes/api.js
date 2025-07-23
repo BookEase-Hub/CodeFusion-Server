@@ -82,7 +82,9 @@ router.route('/ai/messages')
 router.post('/ai/code', protect, generateCode);
 
 // Billing routes
-router.post('/subscribe', protect, createSubscription);
-router.post('/webhook', handleWebhook);
+if (process.env.STRIPE_SECRET_KEY) {
+  router.post('/subscribe', protect, createSubscription);
+  router.post('/webhook', handleWebhook);
+}
 
 module.exports = router;
