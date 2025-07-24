@@ -1,9 +1,14 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? require('stripe')(process.env.STRIPE_SECRET_KEY)
+  : null;
 const Subscription = require('../models/Subscription');
 const User = require('../models/User');
 
 // Create Stripe customer and subscription
 exports.createSubscription = async (req, res) => {
+  if (!stripe) {
+    return res.status(500).send('Stripe is not configured');
+  }
   try {
     const { paymentMethodId, plan } = req.body;
     const user = await User.findById(req.user.id);
@@ -50,6 +55,9 @@ exports.createSubscription = async (req, res) => {
 
 // Handle Stripe webhooks
 exports.handleWebhook = async (req, res) => {
+  if (!stripe) {
+    return res.status(500).send('Stripe is not configured');
+  }
   const sig = req.headers['stripe-signature'];
   let event;
 
