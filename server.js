@@ -35,16 +35,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Create HTTPS server if in production
-let server;
-if (process.env.NODE_ENV === 'production') {
-  const privateKey = fs.readFileSync(process.env.SSL_KEY_PATH, 'utf8');
-  const certificate = fs.readFileSync(process.env.SSL_CERT_PATH, 'utf8');
-  const credentials = { key: privateKey, cert: certificate };
-  server = https.createServer(credentials, app);
-} else {
-  server = app;
-}
+const server = app;
 
 // Setup WebSocket for collaboration
 setupCollaboration(server);
