@@ -13,7 +13,9 @@ const setupCollaboration = require('./services/collaborationService');
 dotenv.config({ path: './config/config.env' });
 
 // Connect to database
-connectDB();
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 
 // Initialize express
 const app = express();
@@ -29,6 +31,7 @@ app.use('/api', apiLimiter);
 // Mount routers
 app.get('/', (req, res) => res.status(200).send('ok'));
 app.use('/api/v1', require('./routes/api'));
+app.use('/', require('./routes/testDbRoutes'));
 
 // Error handling middleware
 app.use(errorHandler);
