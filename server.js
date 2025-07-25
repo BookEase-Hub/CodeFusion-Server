@@ -32,6 +32,7 @@ app.use('/api', apiLimiter);
 app.get('/', (req, res) => res.status(200).send('ok'));
 app.use('/api/v1', require('./routes/api'));
 app.use('/', require('./routes/testDbRoutes'));
+app.use('/', require('./routes/userRoutes'));
 
 // Error handling middleware
 app.use(errorHandler);
