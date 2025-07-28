@@ -22,7 +22,10 @@ const app = express();
 
 // Security middleware
 app.use(securityHeaders);
-app.use(cors());
+app.use(cors({
+  origin: "https://code-fusion-ai-assistant-n9oa.vercel.app",
+  credentials: true
+}));
 app.use(express.json());
 
 // Rate limiting for API routes
