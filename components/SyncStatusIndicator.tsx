@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, Cloud, CheckCircle, AlertCircle } from 'lucide-react';
 
 export function SyncStatusIndicator({ projectId }: { projectId: string }) {

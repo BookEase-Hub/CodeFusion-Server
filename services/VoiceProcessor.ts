@@ -1,5 +1,5 @@
 import { CommandDispatcher } from './CommandDispatcher';
-import natural from 'natural';
+import * as natural from 'natural';
 
 export class VoiceProcessor {
   private commandDispatcher: CommandDispatcher;

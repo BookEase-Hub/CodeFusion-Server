@@ -2,13 +2,15 @@ import { FileService } from './FileService';
 
 export class CommandDispatcher {
   private commandMap: Record<string, Function>;
+  private fileService: FileService;
 
   constructor() {
+    this.fileService = new FileService();
     this.commandMap = {
-      createNewFile: FileService.newFile,
-      openFileDialog: FileService.openDialog,
-      saveFile: FileService.save,
-      find: FileService.find,
+      createNewFile: this.fileService.newFile,
+      openFileDialog: this.fileService.openDialog,
+      saveFile: this.fileService.save,
+      find: this.fileService.find,
       // Add more commands here
     };
   }

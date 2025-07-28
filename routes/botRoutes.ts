@@ -4,12 +4,14 @@ import { BotEngine } from '../services/BotEngine';
 const router = express.Router();
 const botEngine = new BotEngine();
 
-router.post('/bot-command', async (req, res) => {
+import { Request, Response } from 'express';
+
+router.post('/bot-command', async (req: Request, res: Response) => {
   try {
     const { query, sessionId } = req.body;
     const result = await botEngine.processQuery(query);
     res.json({ success: true, result });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 });

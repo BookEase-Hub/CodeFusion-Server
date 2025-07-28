@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
   id: string;
@@ -30,7 +29,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -68,7 +66,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(data.user);  
       localStorage.setItem('codefusion_user', JSON.stringify(data.user));  
       localStorage.setItem('codefusion_token', data.token);  
-      router.push('/dashboard');  
     } catch (error) {  
       console.error('Login error:', error);  
       throw error;  
@@ -96,7 +93,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(data.user);  
       localStorage.setItem('codefusion_user', JSON.stringify(data.user));  
       localStorage.setItem('codefusion_token', data.token);  
-      router.push('/dashboard');  
     } catch (error) {  
       console.error('Signup error:', error);  
       throw error;  
@@ -109,7 +105,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     localStorage.removeItem('codefusion_user');
     localStorage.removeItem('codefusion_token');
-    router.push('/login');
   };
 
   const resetPassword = async (email: string) => {

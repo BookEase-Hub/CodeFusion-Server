@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { MessageCircle, Send } from 'lucide-react';
 
 export function DevBotInterface() {
@@ -25,7 +25,7 @@ export function DevBotInterface() {
         text: result.message || 'Command executed successfully', 
         from: 'bot' 
       }]);
-    } catch (error) {
+    } catch (error: any) {
       setMessages(prev => [...prev, { 
         text: error.message, 
         from: 'bot' 
@@ -37,7 +37,7 @@ export function DevBotInterface() {
     <div className="h-full flex flex-col">
       <div className="p-2 border-b">Developer Bot</div>
       <div className="flex-1 overflow-auto p-4 space-y-2">
-        {messages.map((msg, i) => (
+        {messages.map((msg: { text: string; from: 'user' | 'bot' }, i: number) => (
           <div key={i} className={`p-2 rounded ${msg.from === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-100'}`}>
             {msg.text}
           </div>

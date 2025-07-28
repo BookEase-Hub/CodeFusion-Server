@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { Button, Input, Table } from '@/components/ui';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 
 export function ShortcutConfigurator({ userId }: { userId: string }) {
   const [shortcuts, setShortcuts] = useState<Record<string, string>>({});
@@ -25,7 +24,7 @@ export function ShortcutConfigurator({ userId }: { userId: string }) {
 
   return (
     <div>
-      <Table>
+      <table>
         <thead>
           <tr>
             <th>Shortcut</th>
@@ -40,19 +39,19 @@ export function ShortcutConfigurator({ userId }: { userId: string }) {
             </tr>
           ))}
         </tbody>
-      </Table>
+      </table>
       <div className="mt-4 flex gap-2">
-        <Input 
+        <input
           placeholder="Ctrl+Shift+M" 
           value={newShortcut} 
-          onChange={(e) => setNewShortcut(e.target.value)} 
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setNewShortcut(e.target.value)}
         />
-        <Input 
+        <input
           placeholder="commandName" 
           value={newCommand} 
-          onChange={(e) => setNewCommand(e.target.value)} 
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setNewCommand(e.target.value)}
         />
-        <Button onClick={saveShortcut}>Add Shortcut</Button>
+        <button onClick={saveShortcut}>Add Shortcut</button>
       </div>
     </div>
   );

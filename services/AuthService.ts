@@ -1,4 +1,4 @@
-import { User } from '../models/User';
+import { User } from '../types/User';
 
 export class AuthService {
   public async authenticate(token: string): Promise<User | null> {

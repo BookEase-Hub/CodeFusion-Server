@@ -1,4 +1,3 @@
-import natural from 'natural';
 import { CommandDispatcher } from './CommandDispatcher';
 
 interface CommandPattern {

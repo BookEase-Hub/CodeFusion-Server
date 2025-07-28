@@ -1,25 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { useContinue } from "@/hooks/useContinue";
 
 export const AIAssistant = () => {
   const [input, setInput] = useState("");
   const [response, setResponse] = useState("");
-  const { continueClient } = useContinue();
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
     try {
-      await continueClient.run(
-        {
-          messages: [{ role: "user", content: input }],
-        },
-        (chunk) => {
-          setResponse((prev) => prev + chunk.content);
-        }
-      );
+      // Placeholder for AI response logic
+      setResponse("This is a placeholder response.");
     } catch (error) {
       console.error("Error generating response:", error);
     }

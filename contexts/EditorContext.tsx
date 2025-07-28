@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { useContinue } from "@/hooks/useContinue";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface EditorContextType {
   activeFile: string;
@@ -16,16 +15,6 @@ export const EditorProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeFile, setActiveFile] = useState("");
   const [projectStructure, setProjectStructure] = useState<string[]>([]);
   const [terminalHistory, setTerminalHistory] = useState<string[]>([]);
-
-  const { registerEditorContext } = useContinue();
-
-  useEffect(() => {
-    registerEditorContext({
-      files: [{ path: activeFile, content: "" }],
-      projectStructure,
-      terminalOutput: terminalHistory.join("\n"),
-    });
-  }, [activeFile, projectStructure, terminalHistory]);
 
   return (
     <EditorContext.Provider

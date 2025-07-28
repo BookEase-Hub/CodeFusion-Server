@@ -25,12 +25,13 @@ export class CloudSyncService {
     const session = this.sessions[projectId];
     if (!session) return;
 
+    const fileService = new FileService();
     // Get current project files
-    const files = await FileService.listProjectFiles(projectId);
+    const files = await fileService.listProjectFiles(projectId);
 
     // Update synchronization
     for (const file of files) {
-      const content = await FileService.readFile(file.path);
+      const content = await fileService.readFile(file.path);
       session.files[file.path] = {
         content,
         lastSync: new Date()

@@ -1,23 +1,27 @@
-import { LocalFileSystem } from './LocalFileSystem';
-import { CloudFileSystem } from './CloudFileSystem';
-
 export class FileService {
-  private static localFileSystem = new LocalFileSystem();
-  private static cloudFileSystem = new CloudFileSystem();
+  public async listProjectFiles(projectId: string): Promise<{ path: string }[]> {
+    // Logic to list project files
+    return [];
+  }
 
-  public static async newFile(): Promise<void> {
+  public async readFile(filePath: string): Promise<string> {
+    // Logic to read file
+    return '';
+  }
+
+  public async newFile(): Promise<void> {
     // Logic to create a new file
   }
 
-  public static async openDialog(): Promise<void> {
+  public async openDialog(): Promise<void> {
     // Logic to open file dialog
   }
 
-  public static async save(): Promise<void> {
+  public async save(): Promise<void> {
     // Logic to save file
   }
 
-  public static async find(term: string): Promise<void> {
+  public async find(term: string): Promise<void> {
     // Logic to find files
   }
 
