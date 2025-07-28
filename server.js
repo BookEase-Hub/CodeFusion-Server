@@ -33,6 +33,9 @@ app.use('/api', apiLimiter);
 
 // Mount routers
 app.get('/', (req, res) => res.status(200).send('ok'));
+app.get('/ping', (req, res) => {
+  res.status(200).json({ message: 'pong' });
+});
 app.use('/api/v1', require('./routes/api'));
 app.use('/', require('./routes/testDbRoutes'));
 app.use('/', require('./routes/userRoutes'));
