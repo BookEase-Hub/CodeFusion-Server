@@ -60,11 +60,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {  
-        throw new Error('Login failed');  
-      }  
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("Login failed:", errText);
+        throw new Error("Login failed");
+      }
 
-      const data = await response.json();  
+      const data = await response.json();
       setUser(data.user);  
       localStorage.setItem('codefusion_user', JSON.stringify(data.user));  
       localStorage.setItem('codefusion_token', data.token);  
@@ -88,11 +90,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ name, email, password }),
       });
 
-      if (!response.ok) {  
-        throw new Error('Signup failed');  
-      }  
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("Signup failed:", errText);
+        throw new Error("Signup failed");
+      }
 
-      const data = await response.json();  
+      const data = await response.json();
       setUser(data.user);  
       localStorage.setItem('codefusion_user', JSON.stringify(data.user));  
       localStorage.setItem('codefusion_token', data.token);  

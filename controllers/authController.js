@@ -47,7 +47,7 @@ exports.register = async (req, res) => {
     );  
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -86,7 +86,7 @@ exports.login = async (req, res) => {
     );  
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -97,7 +97,7 @@ exports.getCurrentUser = async (req, res) => {
     res.json(user);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -115,7 +115,7 @@ exports.updateProfile = async (req, res) => {
     res.json(user);  
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -133,7 +133,7 @@ exports.updateAvatar = async (req, res) => {
     res.json(user);  
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -155,6 +155,6 @@ exports.updateSubscription = async (req, res) => {
     res.json(user);  
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: 'Server error' });
   }
 };
