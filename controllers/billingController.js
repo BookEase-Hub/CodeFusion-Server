@@ -25,6 +25,7 @@ exports.createSubscription = async (req, res) => {
       });
       // Save customer ID to user
       user.stripeCustomerId = customer.id;
+      user.credits = 14; // Initialize credits
       await user.save();
     }
     // Create subscription
@@ -50,6 +51,23 @@ exports.createSubscription = async (req, res) => {
   } catch (err) {
     console.error('Subscription Error:', err);
     res.status(500).send('Subscription creation failed');
+  }
+};
+
+// Use a credit
+exports.useCredit = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (user.credits > 0) {
+      user.credits -= 1;
+      await user.save();
+      res.json({ credits: user.credits });
+    } else {
+      res.status(400).send('No credits remaining');
+    }
+  } catch (err) {
+    console.error('Credit Error:', err);
+    res.status(500).send('Credit usage failed');
   }
 };
 

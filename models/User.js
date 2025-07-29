@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema({
     accountId: { type: String },
     accessToken: { type: String }
   }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  credits: { type: Number, default: 14 }
 });
 
 module.exports = mongoose.model('User', userSchema);
