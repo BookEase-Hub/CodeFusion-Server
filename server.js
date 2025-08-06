@@ -1,7 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const connectDB = require('./config/db');
+const { connectDB } = require('./config/db');
 const path = require('path');
 const https = require('https');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const setupCollaboration = require('./services/collaborationService');
 
 // Load env vars
-dotenv.config({ path: './config/config.env' });
+dotenv.config({ path: './config.env' });
 
 // Connect to database
 if (process.env.NODE_ENV !== 'test') {

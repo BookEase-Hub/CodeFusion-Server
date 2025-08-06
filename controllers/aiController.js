@@ -1,91 +1,141 @@
-const Message = require('../models/message');
-const axios = require('axios');
+const Workspace = require('../models/workspaceModel');
+const Diagram = require('../models/diagramModel');
+const aiService = require('../services/aiService'); // I will create this next
+const AppError = require('../utils/errorHandler');
 
-// Configure Continue.dev API
-const CONTINUE_API = 'https://api.continue.dev/v1';
-const CONTINUE_API_KEY = process.env.CONTINUE_API_KEY;
-
-exports.getMessages = async (req, res) => {
+exports.processChatMessage = async (req, res, next) => {
   try {
-    const messages = await Message.find({ userId: req.user.id }).sort('createdAt');
-    res.json(messages);
+    const { message, workspaceId, context } = req.body;
+    const userId = req.user.id;
+
+    // Verify workspace access
+    const workspace = await Workspace.findOne({
+      _id: workspaceId,
+      $or: [
+        { owner: userId },
+        { 'collaborators.user': userId }
+      ]
+    }).populate('project'); // Populate the project to get file data
+
+    if (!workspace) {
+      return next(new AppError('Workspace not found or you do not have access', 404));
+    }
+
+    if (!workspace.project) {
+        return next(new AppError('The workspace is not linked to a valid project.', 404));
+    }
+
+    // Process the AI task
+    const result = await aiService.processAITask({
+      userId,
+      workspaceId,
+      message,
+      context: {
+        ...context,
+        fileTree: workspace.project.files // Pass the file tree from the populated project
+      }
+    });
+
+    // If the result contains a diagram, save it
+    if (result.type === 'diagram') {
+      await Diagram.findOneAndUpdate(
+        { workspace: workspaceId, name: result.diagramName || 'Untitled Diagram' },
+        {
+          mermaidCode: result.content,
+          lastGenerated: Date.now()
+        },
+        { upsert: true, new: true }
+      );
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        result
+      }
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    next(err);
   }
 };
 
-exports.createMessage = async (req, res) => {
+exports.runAgentTask = async (req, res, next) => {
   try {
-    const { content, code } = req.body;
-    // Save user message
-    const userMessage = new Message({
-      role: 'user',
-      content,
-      code,
-      userId: req.user.id
-    });
-    await userMessage.save();
-    // Call Continue.dev API
-    const response = await axios.post(
-      `${CONTINUE_API}/chat/completions`,
-      {
-        messages: [{
-          role: 'user',
-          content: content,
-          ...(code && { code: code.value })
-        }],
-        model: 'continue-model', // Your preferred model
-        temperature: 0.7
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${CONTINUE_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
+    const { task, workspaceId } = req.body;
+    const userId = req.user.id;
+
+    // Verify workspace access
+    const workspace = await Workspace.findOne({
+      _id: workspaceId,
+      $or: [
+        { owner: userId },
+        { 'collaborators.user': userId }
+      ]
+    }).populate('project');
+
+    if (!workspace || !workspace.project) {
+      return next(new AppError('Workspace or associated project not found, or you do not have access', 404));
+    }
+
+    // Process the agent task (multi-step)
+    const steps = await aiService.processAITask({
+      userId,
+      workspaceId,
+      message: task,
+      isAgentTask: true,
+      context: {
+        fileTree: workspace.project.files
       }
-    );
-    const aiResponse = response.data.choices[0].message;
-    // Save AI response
-    const aiMessage = new Message({
-      role: 'assistant',
-      content: aiResponse.content,
-      code: aiResponse.code ? {
-        language: code?.language || 'javascript',
-        value: aiResponse.code
-      } : undefined,
-      userId: req.user.id
     });
-    await aiMessage.save();
-    res.json([userMessage, aiMessage]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        steps
+      }
+    });
   } catch (err) {
-    console.error('AI Error:', err.response?.data || err.message);
-    res.status(500).send('AI service error');
+    next(err);
   }
 };
 
-// Additional AI endpoints
-exports.generateCode = async (req, res) => {
+exports.getTaskHistory = async (req, res, next) => {
   try {
-    const { prompt, context } = req.body;
-    const response = await axios.post(
-      `${CONTINUE_API}/code/completions`,
+    const { workspaceId } = req.params;
+    const userId = req.user.id;
+
+    // Verify workspace access
+    const workspace = await Workspace.findOne({
+      _id: workspaceId,
+      $or: [
+        { owner: userId },
+        { 'collaborators.user': userId }
+      ]
+    });
+
+    if (!workspace) {
+      return next(new AppError('Workspace not found or you do not have access', 404));
+    }
+
+    // In a real app, you'd have a Task model to store history
+    // For now we'll return a mock response
+    const history = [
       {
-        prompt,
-        context,
-        language: req.body.language || 'javascript',
-        temperature: 0.5
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${CONTINUE_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
+        id: '1',
+        type: 'chat',
+        input: 'Create a React component',
+        output: 'I created a functional component',
+        timestamp: new Date()
       }
-    );
-    res.json(response.data);
+    ];
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        history
+      }
+    });
   } catch (err) {
-    console.error('Code Generation Error:', err.response?.data || err.message);
-    res.status(500).send('Code generation failed');
+    next(err);
   }
 };

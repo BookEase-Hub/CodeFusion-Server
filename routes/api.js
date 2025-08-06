@@ -1,20 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middlewares/auth');
 const { validateUser, validateLogin, validateFile } = require('../middlewares/validation');
 const {
-  register,
+  signup,
   login,
+  protect,
   getCurrentUser,
   updateProfile,
   updateAvatar,
   updateSubscription
 } = require('../controllers/authController');
 const {
-  getProjects,
+  listProjects,
   createProject,
+  getProject,
   updateProject,
-  deleteProject
+  deleteProject,
+  importProject,
+  exportProject,
+  syncProject
 } = require('../controllers/projectController');
 const {
   getIntegrations,
@@ -23,9 +27,9 @@ const {
   deleteIntegration
 } = require('../controllers/integrationController');
 const {
-  getMessages,
-  createMessage,
-  generateCode
+  processChatMessage,
+  runAgentTask,
+  getTaskHistory
 } = require('../controllers/aiController');
 const {
   getFiles,
@@ -34,12 +38,14 @@ const {
   executeCommand
 } = require('../controllers/fileController');
 const {
-  createSubscription,
+  createCheckoutSession,
+  createPortalSession,
   handleWebhook
 } = require('../controllers/billingController');
+const workspaceController = require('../controllers/workspaceController');
 
 // Auth routes
-router.post('/register', validateUser, register);
+router.post('/register', validateUser, signup);
 router.post('/login', validateLogin, login);
 router.get('/me', protect, getCurrentUser);
 router.put('/profile', protect, updateProfile);
@@ -48,12 +54,18 @@ router.put('/subscription', protect, updateSubscription);
 
 // Project routes
 router.route('/projects')
-  .get(protect, getProjects)
+  .get(protect, listProjects)
   .post(protect, createProject);
 
+router.route('/projects/import').post(protect, importProject);
+
 router.route('/projects/:id')
-  .put(protect, updateProject)
+  .get(protect, getProject)
+  .patch(protect, updateProject) // Using PATCH for partial updates is more conventional
   .delete(protect, deleteProject);
+
+router.route('/projects/:id/export').get(protect, exportProject);
+router.route('/projects/:id/sync').post(protect, syncProject);
 
 // File routes
 router.route('/files')
@@ -75,16 +87,24 @@ router.route('/integrations/:id')
   .delete(protect, deleteIntegration);
 
 // AI routes
-router.route('/ai/messages')
-  .get(protect, getMessages)
-  .post(protect, createMessage);
+router.post('/ai/chat', protect, processChatMessage);
+router.post('/ai/agent', protect, runAgentTask);
+router.get('/ai/history/:workspaceId', protect, getTaskHistory);
 
-router.post('/ai/code', protect, generateCode);
+// Workspace routes
+router.route('/workspaces')
+    .get(protect, workspaceController.listWorkspaces)
+    .post(protect, workspaceController.createWorkspace);
+
+router.route('/workspaces/:id')
+    .get(protect, workspaceController.getWorkspace)
+    .patch(protect, workspaceController.updateWorkspace)
+    .delete(protect, workspaceController.deleteWorkspace);
 
 // Billing routes
 if (process.env.STRIPE_SECRET_KEY) {
-  router.post('/subscribe', protect, createSubscription);
-  router.post('/webhook', handleWebhook);
+  router.post('/billing/checkout', protect, createCheckoutSession);
+  router.post('/billing/portal', protect, createPortalSession);
 }
 
 module.exports = router;
