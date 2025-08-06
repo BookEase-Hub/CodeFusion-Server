@@ -1,16 +1,28 @@
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
+exports.connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('MongoDB Connected');
+    const DB = process.env.DATABASE.replace(
+      '<PASSWORD>',
+      process.env.DATABASE_PASSWORD
+    );
+
+    // For Mongoose 6 and above, the connection options are no longer necessary
+    // as they are included by default.
+    await mongoose.connect(DB);
+    console.log('MongoDB connection successful!');
   } catch (err) {
-    console.error('MongoDB Connection Error:', err.message);
+    console.error('MongoDB connection error:', err);
     process.exit(1);
   }
 };
 
-module.exports = connectDB;
+exports.disconnectDB = async () => {
+  try {
+    await mongoose.disconnect();
+    console.log('MongoDB disconnected');
+  } catch (err) {
+    console.error('Error disconnecting MongoDB:', err);
+    process.exit(1);
+  }
+};

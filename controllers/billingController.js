@@ -1,113 +1,115 @@
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? require('stripe')(process.env.STRIPE_SECRET_KEY)
-  : null;
-const Subscription = require('../models/Subscription');
 const User = require('../models/User');
+const AppError = require('../utils/errorHandler');
+const {
+    stripe,
+    updateSubscription,
+    createStripeCheckoutSession,
+    createStripeBillingPortalSession
+} = require('../services/subscriptionService');
 
-// Create Stripe customer and subscription
-exports.createSubscription = async (req, res) => {
-  if (!stripe) {
-    return res.status(500).send('Stripe is not configured');
-  }
-  try {
-    const { paymentMethodId, plan } = req.body;
-    const user = await User.findById(req.user.id);
-    // Create or retrieve Stripe customer
-    let customer;
-    if (user.stripeCustomerId) {
-      customer = await stripe.customers.retrieve(user.stripeCustomerId);
-    } else {
-      customer = await stripe.customers.create({
-        email: user.email,
-        name: user.name,
-        payment_method: paymentMethodId,
-        invoice_settings: { default_payment_method: paymentMethodId }
-      });
-      // Save customer ID to user
-      user.stripeCustomerId = customer.id;
-      await user.save();
-    }
-    // Create subscription
-    const subscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{ price: process.env[`STRIPE_${plan.toUpperCase()}_PRICE_ID`] }],
-      expand: ['latest_invoice.payment_intent']
-    });
-    // Save subscription to database
-    const newSubscription = new Subscription({
-      userId: req.user.id,
-      plan,
-      status: 'active',
-      stripeCustomerId: customer.id,
-      stripeSubscriptionId: subscription.id,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000)
-    });
-    await newSubscription.save();
-    res.json({
-      status: subscription.status,
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret
-    });
-  } catch (err) {
-    console.error('Subscription Error:', err);
-    res.status(500).send('Subscription creation failed');
-  }
-};
 
-// Handle Stripe webhooks
-exports.handleWebhook = async (req, res) => {
-  if (!stripe) {
-    return res.status(500).send('Stripe is not configured');
-  }
-  const sig = req.headers['stripe-signature'];
-  let event;
+exports.createCheckoutSession = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const userEmail = req.user.email;
+        const priceId = process.env.STRIPE_PREMIUM_PRICE_ID;
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    console.error('Webhook Error:', err);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  switch (event.type) {
-    case 'invoice.payment_succeeded':
-      const subscription = event.data.object;
-      await Subscription.updateOne(
-        { stripeSubscriptionId: subscription.subscription },
-        {
-          currentPeriodEnd: new Date(subscription.period_end * 1000),
-          updatedAt: Date.now()
+        if (!priceId) {
+            return next(new AppError('Stripe price ID is not configured.', 500));
         }
-      );
-      break;
-    case 'customer.subscription.deleted':
-      const deletedSub = event.data.object;
-      await Subscription.updateOne(
-        { stripeSubscriptionId: deletedSub.id },
-        { status: 'canceled', updatedAt: Date.now() }
-      );
-      break;
-    // Handle other events as needed
-  }
 
-  res.json({ received: true });
+        const session = await createStripeCheckoutSession(userId, userEmail, priceId);
+
+        res.status(200).json({
+            status: 'success',
+            url: session.url
+        });
+    } catch (err) {
+        next(err);
+    }
 };
 
-// Check trial status and downgrade if needed
-exports.checkTrialStatus = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (user.subscriptionStatus === 'trial' && new Date() > user.trialEndsAt) {
-      user.subscriptionStatus = 'inactive';
-      user.subscriptionPlan = 'free';
-      await user.save();
+exports.createPortalSession = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user || !user.stripeCustomerId) {
+            return next(new AppError('User does not have a subscription or customer ID.', 400));
+        }
+        const session = await createStripeBillingPortalSession(user.stripeCustomerId);
+        res.status(200).json({
+            status: 'success',
+            url: session.url
+        });
+    } catch (err) {
+        next(err);
     }
-    next();
-  } catch (err) {
-    console.error('Trial Check Error:', err);
-    next();
-  }
+};
+
+exports.handleWebhook = async (req, res, next) => {
+    const signature = req.headers['stripe-signature'];
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(
+            req.body, // The raw body
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
+    } catch (err) {
+        console.log(`Webhook Error: ${err.message}`);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    try {
+        switch (event.type) {
+            case 'checkout.session.completed':
+                const session = event.data.object;
+                const sub = await stripe.subscriptions.retrieve(session.subscription);
+                await updateSubscription({
+                    userId: session.client_reference_id,
+                    stripeCustomerId: session.customer,
+                    stripeSubscriptionId: sub.id,
+                    stripePriceId: sub.items.data[0].price.id,
+                    plan: 'premium',
+                    status: sub.status,
+                    stripeCurrentPeriodEnd: new Date(sub.current_period_end * 1000)
+                });
+                break;
+
+            case 'invoice.payment_succeeded':
+                const invoice = event.data.object;
+                const user = await User.findOne({ stripeCustomerId: invoice.customer });
+                if (user) {
+                    await updateSubscription({
+                        userId: user._id.toString(),
+                        status: 'active',
+                        currentPeriodEnd: new Date(invoice.lines.data[0].period.end * 1000)
+                    });
+                }
+                break;
+
+            case 'customer.subscription.updated':
+            case 'customer.subscription.deleted':
+                const subscription = event.data.object;
+                const userToUpdate = await User.findOne({ stripeSubscriptionId: subscription.id });
+                if (userToUpdate) {
+                    await updateSubscription({
+                        userId: userToUpdate._id.toString(),
+                        status: subscription.status,
+                        plan: subscription.cancel_at_period_end ? 'premium' : (subscription.status === 'canceled' ? 'free' : 'premium'),
+                        cancelAtPeriodEnd: subscription.cancel_at_period_end
+                    });
+                }
+                break;
+
+            default:
+                console.log(`Unhandled event type ${event.type}`);
+        }
+    } catch (error) {
+        console.error('Webhook handler error:', error);
+        // Do not send error to Stripe, just log it. Stripe will retry if it doesn't get a 200.
+    }
+
+    res.status(200).json({ received: true });
 };
