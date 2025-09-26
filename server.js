@@ -12,6 +12,17 @@ const setupCollaboration = require('./services/collaborationService');
 // Load env vars
 dotenv.config({ path: './config.env' });
 
+// --- TEMPORARY DIAGNOSTIC LOG ---
+console.log('--- Checking Environment Variables ---');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('STRIPE_SECRET_KEY is set:', !!process.env.STRIPE_SECRET_KEY);
+if (process.env.STRIPE_SECRET_KEY) {
+    console.log('STRIPE_SECRET_KEY length:', process.env.STRIPE_SECRET_KEY.length);
+    console.log('STRIPE_SECRET_KEY starts with "sk_":', process.env.STRIPE_SECRET_KEY.startsWith('sk_'));
+}
+console.log('------------------------------------');
+// --- END TEMPORARY DIAGNOSTIC LOG ---
+
 // Connect to database
 // if (process.env.NODE_ENV !== 'test') {
 //   connectDB();
