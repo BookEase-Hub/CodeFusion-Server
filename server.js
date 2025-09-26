@@ -13,9 +13,9 @@ const setupCollaboration = require('./services/collaborationService');
 dotenv.config({ path: './config.env' });
 
 // Connect to database
-if (process.env.NODE_ENV !== 'test') {
-  connectDB();
-}
+// if (process.env.NODE_ENV !== 'test') {
+//   connectDB();
+// }
 
 // Initialize express
 const app = express();

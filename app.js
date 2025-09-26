@@ -55,6 +55,11 @@ app.use(compression());
 // I will simplify the routing structure to use the single main apiRouter
 app.use('/api/v1', apiRouter);
 
+// Integrate the new backend routes
+const v2Router = require('./dist/router');
+app.use('/api/v2', v2Router);
+
+
 // Handle undefined routes
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

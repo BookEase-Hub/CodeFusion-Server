@@ -2,10 +2,7 @@ const mongoose = require('mongoose');
 
 exports.connectDB = async () => {
   try {
-    const DB = process.env.DATABASE.replace(
-      '<PASSWORD>',
-      process.env.DATABASE_PASSWORD
-    );
+    const DB = process.env.MONGO_URI;
 
     // For Mongoose 6 and above, the connection options are no longer necessary
     // as they are included by default.
