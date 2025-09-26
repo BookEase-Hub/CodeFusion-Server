@@ -7,8 +7,7 @@ const {
   protect,
   getCurrentUser,
   updateProfile,
-  updateAvatar,
-  updateSubscription
+  updateAvatar
 } = require('../controllers/authController');
 const {
   listProjects,
@@ -37,11 +36,6 @@ const {
   updateFile,
   executeCommand
 } = require('../controllers/fileController');
-const {
-  createCheckoutSession,
-  createPortalSession,
-  handleWebhook
-} = require('../controllers/billingController');
 const workspaceController = require('../controllers/workspaceController');
 
 // Auth routes
@@ -50,7 +44,6 @@ router.post('/login', validateLogin, login);
 router.get('/me', protect, getCurrentUser);
 router.put('/profile', protect, updateProfile);
 router.put('/avatar', protect, updateAvatar);
-router.put('/subscription', protect, updateSubscription);
 
 // Project routes
 router.route('/projects')
@@ -101,10 +94,5 @@ router.route('/workspaces/:id')
     .patch(protect, workspaceController.updateWorkspace)
     .delete(protect, workspaceController.deleteWorkspace);
 
-// Billing routes
-if (process.env.STRIPE_SECRET_KEY) {
-  router.post('/billing/checkout', protect, createCheckoutSession);
-  router.post('/billing/portal', protect, createPortalSession);
-}
 
 module.exports = router;

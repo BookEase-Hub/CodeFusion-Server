@@ -138,4 +138,3 @@ exports.getCurrentUser = (req, res) => {
 
 exports.updateProfile = (req, res, next) => next(new AppError('This route is not yet implemented!', 501));
 exports.updateAvatar = (req, res, next) => next(new AppError('This route is not yet implemented!', 501));
-exports.updateSubscription = (req, res, next) => next(new AppError('This route is not yet implemented!', 501));
