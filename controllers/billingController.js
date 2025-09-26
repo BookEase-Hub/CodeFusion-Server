@@ -1,17 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
-import { creditCardSchema } from '../models/CreditCard';
-import { User } from '../models/User';
-import AppError from '../utils/errorHandler';
+const { creditCardSchema } = require('../models/CreditCard');
+const User = require('../models/User');
+const AppError = require('../utils/errorHandler');
 
 /**
  * Mock function to simulate a payment processor (e.g., internal ledger, third-party gateway).
  * In real life, you'd integrate with a PCI-compliant service (e.g., Stripe, Adyen).
  * NEVER implement raw card processing yourself.
  */
-async function processPaymentMock(
-  cardData: { name: string; email: string },
-  amount: number
-): Promise<{ success: boolean; transactionId?: string }> {
+async function processPaymentMock(cardData, amount) {
   // Simulate 95% success rate
   if (Math.random() > 0.05) {
     return {
@@ -26,11 +22,7 @@ async function processPaymentMock(
  * POST /api/v1/billing/process-card
  * Processes a credit card payment without storing sensitive data.
  */
-export const processCreditCard = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const processCreditCard = async (req, res, next) => {
   try {
     // 1. Validate input
     const { error, value } = creditCardSchema.validate(req.body, {
@@ -89,3 +81,5 @@ export const processCreditCard = async (
     return next(new AppError('Payment processing failed', 500));
   }
 };
+
+module.exports = { processCreditCard };

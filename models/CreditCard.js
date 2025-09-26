@@ -1,10 +1,10 @@
-import Joi from 'joi';
+const Joi = require('joi');
 
 /**
  * Validates credit card input without storing sensitive data.
  * PCI DSS compliance: Never log or persist full PAN, CVV, or expiry.
  */
-export const creditCardSchema = Joi.object({
+const creditCardSchema = Joi.object({
   // Cardholder name (non-sensitive)
   name: Joi.string().trim().min(2).max(50).required().messages({
     'string.empty': 'Cardholder name is required',
@@ -65,3 +65,5 @@ export const creditCardSchema = Joi.object({
       'string.pattern.base': 'CVC must be 3 or 4 digits',
     }),
 });
+
+module.exports = { creditCardSchema };
